@@ -1,6 +1,6 @@
 import {FilterValuesType, TaskType} from "./App";
 import {Button} from "./Button";
-import {useState} from "react";
+import {ChangeEvent, useState} from "react";
 
 type PropsType = {
     title: string
@@ -8,6 +8,7 @@ type PropsType = {
     removeTask: (taskId: string) => void
     changeFilter: (filter: FilterValuesType) => void
     addTask: (taskTitle: string, taskNumber: number) => void
+    changeTaskStatus: (taskId: string, newStatusV: boolean) => void
 }
 
 export const Todolist = ({
@@ -15,32 +16,17 @@ export const Todolist = ({
                              tasks,
                              removeTask,
                              changeFilter,
-                             addTask
+                             addTask,
+                             changeTaskStatus
                          }: PropsType) => {
     const [taskTitle, setTaskTitle] = useState<string>('')
-    const [extractedNumber, setExtractedNumber] = useState<number | null>(null)
-    const [extractedText, setExtractedText] = useState<string>('')
-
+    const [error, setError] = useState<string | null>(null)
     const [totalSum, setTotalSum] = useState<number>(0)
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.currentTarget.value
-        setTaskTitle(value)
-        //
-        // let number = 0;
-        // let text = '';
-        //
-        // for (let char of value) {
-        //     if (!isNaN(Number(char)) && char !== '') {
-        //         number = number * 10 + Number(char)
-        //     } else {
-        //         text += char
-        //     }
-        // }
-        // setExtractedNumber(isNaN(number) ? null : number)
-        // setExtractedText(text.trim())
+         setTaskTitle(value)
     }
-
 
 
     const extractNumberAndText = (input: string): { text: string; number: number } => {
@@ -48,7 +34,7 @@ export const Todolist = ({
         let text = ''
 
         for (let char of input) {
-            if (!isNaN(Number(char))) {
+            if (!isNaN(Number(char)) && char.trim() !== '') {
                 number = number * 10 + Number(char)
             } else {
                 text += char
@@ -59,29 +45,32 @@ export const Todolist = ({
 
     const handleAddTask = () => {
         const trimmedValue = taskTitle.trim()
-        if (trimmedValue === '') return
-        
-        const {text, number} = extractNumberAndText(trimmedValue)
-        addTask(text || `Задача без текста`, number)
-        setTotalSum((prevSum) => prevSum + number)
-        setTaskTitle('')
+        if (trimmedValue === '') {
+            setError('Ты ничего не ввел')
+            return
+        }
+            const {text, number} = extractNumberAndText(trimmedValue)
+            addTask(text, number)
+            setTotalSum((prevSum) => prevSum + number)
+            setTaskTitle('')
+            setError(null)
     }
 
 
     const handleInputEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if(e.key === 'Enter') {
+        if (e.key === 'Enter') {
             handleAddTask()
         }
     }
     const handleRemoveTask = (id: string) => {
         const taskToRemove = tasks.find((task) => task.id === id)
         if (taskToRemove) {
-            const numberToSubtract = taskToRemove.number ?? 0
+            const numberToSubtract = taskToRemove.number || 0
             setTotalSum((prevSum) => prevSum - numberToSubtract)
         }
         removeTask(id)
     }
-
+    
     return (
         <div>
             <h1>{title}</h1>
@@ -94,29 +83,41 @@ export const Todolist = ({
                 />
 
                 <Button title={'+'} onClick={handleAddTask}/>
-
+                {error && <div className={'error-message'}>{error}</div>}
                 <h2>
                     <span>Вы ввели: {taskTitle}</span>
                 </h2>
             </div>
-            {tasks.length === 0 ? (
-                <p>Тасок нет</p>
-            ) : (
-                <ol>
-                    {tasks.map((task: TaskType) => (
-                        <li key={task.id}>
-                            <input type="checkbox" checked={task.isDone}/>
-                            {task.title} {task.number}
-                            <Button title="x" onClick={() => handleRemoveTask(task.id)}/>
-                        </li>
-                    ))}
-                </ol>
-            )}
-            <h3>Сумма всех чисел: {totalSum}</h3>
+            {
+                tasks.length === 0
+                    ? <p>Тасок нет</p>
+                    : <ol>
+                        {tasks.map((task: TaskType) => {
+
+                            const removeTaskHandler = () => {
+                                handleRemoveTask(task.id)
+                            }
+
+                            const changeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
+                                const newStatusValue = e.currentTarget.checked
+                                changeTaskStatus(task.id, newStatusValue)
+                            }
+
+
+                           return  <li key={task.id}>
+                                <input type="checkbox" checked={task.isDone} onChange={changeTaskStatusHandler}/>
+                                {task.title} {task.number}
+                                <Button title="x" onClick={removeTaskHandler }/>
+                            </li>
+                        })}
+                    </ol>
+            }
+            {tasks.length > 0 && <h3>Сумма всех чисел: {totalSum}</h3>}
             <div>
-                <Button title={'All'} onClick={() => changeFilter('all')}/>
-                <Button title={'Active'} onClick={() => changeFilter('active')}/>
-                <Button title={'Completed'} onClick={() => changeFilter('completed')}/>
+                <Button title={'Все'} onClick={() => changeFilter('Все')}/>
+                <Button title={'Обычный'} onClick={() => changeFilter('Обычный')}/>
+                <Button title={'Отмеченный'} onClick={() => changeFilter('Отмеченный')}/>
+
             </div>
         </div>
     )

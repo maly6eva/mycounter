@@ -10,12 +10,12 @@ export type TaskType = {
     number?: number
 }
 
-export type FilterValuesType = 'all' | 'active' | 'completed'
+export type FilterValuesType = 'Все' | 'Обычный' | 'Отмеченный'
 
 function App() {
     const [tasks, setTasks] = useState<TaskType[]>([])
 
-    const [filter, setFilter] = useState<FilterValuesType>('all')
+    const [filter, setFilter] = useState<FilterValuesType>('Все')
 
     const removeTask = (taskId: string) => {
         const filteredTasks = tasks.filter((task) => {
@@ -29,11 +29,11 @@ function App() {
     }
 
     let tasksForTodolist = tasks
-    if (filter === 'active') {
+    if (filter === 'Обычный') {
         tasksForTodolist = tasks.filter(task => !task.isDone)
     }
 
-    if (filter === 'completed') {
+    if (filter === 'Отмеченный') {
         tasksForTodolist = tasks.filter(task => task.isDone)
     }
 
@@ -51,6 +51,13 @@ function App() {
         setTasks(newTasks)
     }
 
+    const  changeTaskStatus = (taskId: string, newStatusV: boolean) => {
+        const task = tasks.find(t => t.id === taskId)
+        if(task) {
+            task.isDone = newStatusV
+            setTasks([...tasks])
+        }
+    }
     return (
         <div className="App">
             <Todolist title="Счетчик чисел с пометками"
@@ -58,6 +65,8 @@ function App() {
                       removeTask={removeTask}
                       changeFilter={changeFilter}
                       addTask={addTask}
+                      changeTaskStatus={changeTaskStatus}
+
             />
         </div>
     );
