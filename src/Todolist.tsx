@@ -26,20 +26,21 @@ export const Todolist = ({
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.currentTarget.value
         setTaskTitle(value)
-
-        let number = 0;
-        let text = '';
-
-        for (let char of value) {
-            if (!isNaN(Number(char)) && char !== '') {
-                number = number * 10 + Number(char)
-            } else {
-                text += char
-            }
-        }
-        setExtractedNumber(isNaN(number) ? null : number)
-        setExtractedText(text.trim())
+        //
+        // let number = 0;
+        // let text = '';
+        //
+        // for (let char of value) {
+        //     if (!isNaN(Number(char)) && char !== '') {
+        //         number = number * 10 + Number(char)
+        //     } else {
+        //         text += char
+        //     }
+        // }
+        // setExtractedNumber(isNaN(number) ? null : number)
+        // setExtractedText(text.trim())
     }
+
 
 
     const extractNumberAndText = (input: string): { text: string; number: number } => {
@@ -47,24 +48,31 @@ export const Todolist = ({
         let text = ''
 
         for (let char of input) {
-            if (!isNaN(Number(char)) && char !== ' ') {
+            if (!isNaN(Number(char))) {
                 number = number * 10 + Number(char)
             } else {
                 text += char
             }
         }
-        return {text: text.trim(), number: isNaN(number) ? 0 : number}
+        return {text: text.trim(), number}
     }
 
     const handleAddTask = () => {
-        const trimmedValue = taskTitle
+        const trimmedValue = taskTitle.trim()
         if (trimmedValue === '') return
+        
         const {text, number} = extractNumberAndText(trimmedValue)
         addTask(text || `Задача без текста`, number)
         setTotalSum((prevSum) => prevSum + number)
         setTaskTitle('')
     }
 
+
+    const handleInputEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if(e.key === 'Enter') {
+            handleAddTask()
+        }
+    }
     const handleRemoveTask = (id: string) => {
         const taskToRemove = tasks.find((task) => task.id === id)
         if (taskToRemove) {
@@ -76,12 +84,15 @@ export const Todolist = ({
 
     return (
         <div>
-            <h3>{title}</h3>
+            <h1>{title}</h1>
             <div>
                 <input type='text'
                        placeholder='Введи строку и число'
                        value={taskTitle}
-                       onChange={handleInputChange}/>
+                       onChange={handleInputChange}
+                       onKeyUp={handleInputEnter}
+                />
+
                 <Button title={'+'} onClick={handleAddTask}/>
 
                 <h2>
@@ -101,7 +112,7 @@ export const Todolist = ({
                     ))}
                 </ol>
             )}
-            <p>Сумма всех чисел: {totalSum}</p>
+            <h3>Сумма всех чисел: {totalSum}</h3>
             <div>
                 <Button title={'All'} onClick={() => changeFilter('all')}/>
                 <Button title={'Active'} onClick={() => changeFilter('active')}/>
