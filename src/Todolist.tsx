@@ -86,7 +86,7 @@ export const Todolist = ({
                        onKeyUp={handleInputEnter}
                 />
 
-                <Button title={'+'} onClick={handleAddTask}/>
+                <Button title={'добавить'} onClick={handleAddTask}/>
                 {error && <div className={'error-message'}>{error}</div>}
 
             </div>
