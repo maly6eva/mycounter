@@ -103,7 +103,7 @@ export const Todolist = ({
                                 const newStatusValue = e.currentTarget.checked
                                 changeTaskStatus(task.id, newStatusValue)
                             }
-                            
+
                             return <li key={task.id}>
                                 <input type="checkbox"
                                        checked={task.isDone}
